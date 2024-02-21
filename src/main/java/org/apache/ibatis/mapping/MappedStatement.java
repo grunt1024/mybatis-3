@@ -30,11 +30,31 @@ import org.apache.ibatis.session.Configuration;
 
 /**
  * @author Clinton Begin
+ * 映射的语句
+ *
+ *
+ * 该对象完整的表述出一个下面节点的信息
+ *
+ *      <insert id="addUser" parameterType="User">
+ *         INSERT INTO `user`
+ *         (`name`,`email`,`age`,`sex`,`schoolName`)
+ *         VALUES
+ *         (#{name},#{email},#{age},#{sex},#{schoolName})
+ *     </insert>
+ *
  */
 public final class MappedStatement {
 
+
+  /**
+   * mapper文件磁盘路径
+   */
   private String resource;
   private Configuration configuration;
+
+  /**
+   * 查询语句的唯一id:   全路径加方法名，例如：com.github.xx.yyy.dao.UserMapper.addUser
+   */
   private String id;
   private Integer fetchSize;
   private Integer timeout;

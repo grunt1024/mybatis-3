@@ -31,6 +31,7 @@ import java.util.Map;
 
 import javassist.util.proxy.Proxy;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.BaseDataTest;
 import org.apache.ibatis.binding.BindingException;
 import org.apache.ibatis.cache.impl.PerpetualCache;
@@ -54,6 +55,9 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+
+
+@Slf4j
 public class SqlSessionTest extends BaseDataTest {
   private static SqlSessionFactory sqlMapper;
 
@@ -62,8 +66,11 @@ public class SqlSessionTest extends BaseDataTest {
     createBlogDataSource();
     final String resource = "org/apache/ibatis/builder/MapperConfig.xml";
     final Reader reader = Resources.getResourceAsReader(resource);
+
+    //SqlSessionFactoryBuilder 构造者模式, 输入一个配置文件
     sqlMapper = new SqlSessionFactoryBuilder().build(reader);
   }
+
 
   @Test
   public void shouldResolveBothSimpleNameAndFullyQualifiedName() {
@@ -129,12 +136,17 @@ public class SqlSessionTest extends BaseDataTest {
 
   @Test
   public void shouldOpenAndClose() throws Exception {
+    //创建一个SqlSession, 设置事务隔离级别,  open动作, close动作
     SqlSession session = sqlMapper.openSession(TransactionIsolationLevel.SERIALIZABLE);
     session.close();
   }
 
   @Test
   public void shouldCommitAnUnUsedSqlSession() throws Exception {
+    //创建一个SqlSession, 设置事务隔离级别, 设置是否自动提交事务
+
+    final TransactionIsolationLevel readUncommitted = TransactionIsolationLevel.READ_UNCOMMITTED;
+
     SqlSession session = sqlMapper.openSession(TransactionIsolationLevel.SERIALIZABLE);
     session.commit(true);
     session.close();
@@ -151,6 +163,8 @@ public class SqlSessionTest extends BaseDataTest {
   public void shouldSelectAllAuthors() throws Exception {
     SqlSession session = sqlMapper.openSession(TransactionIsolationLevel.SERIALIZABLE);
     try {
+      //创建一个sqlSession,并且执行查询语句
+      System.out.println("=================创建sqlSession, 执行查询语句 selectAllAuthors ======================\n");
       List<Author> authors = session.selectList("org.apache.ibatis.domain.blog.mappers.AuthorMapper.selectAllAuthors");
       assertEquals(2, authors.size());
     } finally {
@@ -159,11 +173,12 @@ public class SqlSessionTest extends BaseDataTest {
   }
 
   @Test(expected=TooManyResultsException.class)
-  public void shouldFailWithTooManyResultsException() throws Exception {
+  public void shouldFailWithTooManyResultsException() {
     SqlSession session = sqlMapper.openSession(TransactionIsolationLevel.SERIALIZABLE);
     try {
+      System.out.println("=================创建sqlSession, 执行查询一条数据方法, 传入的是查询多条数据的sql,会报错 ======================\n");
       session.selectOne("org.apache.ibatis.domain.blog.mappers.AuthorMapper.selectAllAuthors");
-    } finally {
+    } finally{
       session.close();
     }
   }
@@ -172,6 +187,8 @@ public class SqlSessionTest extends BaseDataTest {
   public void shouldSelectAllAuthorsAsMap() throws Exception {
     SqlSession session = sqlMapper.openSession(TransactionIsolationLevel.SERIALIZABLE);
     try {
+
+      //selectMap 方法 需要传入一个 mapKey参数
       final Map<Integer,Author> authors = session.selectMap("org.apache.ibatis.domain.blog.mappers.AuthorMapper.selectAllAuthors", "id");
       assertEquals(2, authors.size());
       for(Map.Entry<Integer,Author> authorEntry : authors.entrySet()) {

@@ -34,6 +34,9 @@ public interface Executor {
 
   ResultHandler NO_RESULT_HANDLER = null;
 
+  /**
+   * 数据更新操作，其中数据的增加、删除、更新均可由该方法实现
+   */
   int update(MappedStatement ms, Object parameter) throws SQLException;
 
   <E> List<E> query(MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler, CacheKey cacheKey, BoundSql boundSql) throws SQLException;
@@ -42,16 +45,32 @@ public interface Executor {
 
   <E> Cursor<E> queryCursor(MappedStatement ms, Object parameter, RowBounds rowBounds) throws SQLException;
 
+
+  /**
+   * 清理缓存
+   * @return
+   * @throws SQLException
+   */
   List<BatchResult> flushStatements() throws SQLException;
 
   void commit(boolean required) throws SQLException;
 
+
+  /**
+   * 回滚事务
+   * @param required
+   * @throws SQLException
+   */
   void rollback(boolean required) throws SQLException;
 
   CacheKey createCacheKey(MappedStatement ms, Object parameterObject, RowBounds rowBounds, BoundSql boundSql);
 
   boolean isCached(MappedStatement ms, CacheKey key);
 
+
+  /**
+   * 清理本地缓存
+   */
   void clearLocalCache();
 
   void deferLoad(MappedStatement ms, MetaObject resultObject, String property, CacheKey key, Class<?> targetType);

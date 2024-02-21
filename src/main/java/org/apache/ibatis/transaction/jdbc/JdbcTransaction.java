@@ -35,13 +35,30 @@ import org.apache.ibatis.transaction.TransactionException;
  *
  * @see JdbcTransactionFactory
  */
+
+//JDBC 进行事务管理
 public class JdbcTransaction implements Transaction {
 
   private static final Log log = LogFactory.getLog(JdbcTransaction.class);
 
+
+  /**
+   * 连接信息
+   */
   protected Connection connection;
+
+
+  /**
+   * 数据源
+   */
   protected DataSource dataSource;
+
+
+  /**
+   * 事务隔离级别,枚举
+   */
   protected TransactionIsolationLevel level;
+
   // MEMO: We are aware of the typo. See #941
   protected boolean autoCommmit;
 

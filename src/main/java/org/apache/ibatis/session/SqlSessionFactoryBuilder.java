@@ -44,9 +44,17 @@ public class SqlSessionFactoryBuilder {
     return build(reader, null, properties);
   }
 
+
+  //build 方法有重载,可以传入一个inputstream, 或者reader
+
   public SqlSessionFactory build(Reader reader, String environment, Properties properties) {
     try {
+
+      //1, reader里面是读取的配置文件信息
+      //2, XMLConfigBuilder 去解析配置文件, 输出一个 Configuration 类
       XMLConfigBuilder parser = new XMLConfigBuilder(reader, environment, properties);
+
+      //根据Configuration ,创建SqlSessionFactory,  直接new出来的
       return build(parser.parse());
     } catch (Exception e) {
       throw ExceptionFactory.wrapException("Error building SqlSession.", e);

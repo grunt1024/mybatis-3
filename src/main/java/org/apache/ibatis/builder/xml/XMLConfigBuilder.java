@@ -53,9 +53,27 @@ import org.apache.ibatis.type.TypeHandler;
  */
 public class XMLConfigBuilder extends BaseBuilder {
 
+
+  /**
+   * 记录是否已经对配置文件完成解析
+   */
   private boolean parsed;
+
+  /**
+   * 解析器
+   */
   private final XPathParser parser;
+
+
+  /**
+   * 要读取哪一个Environment节点，这里存储节点名
+   */
   private String environment;
+
+
+  /**
+   * 反射工厂
+   */
   private final ReflectorFactory localReflectorFactory = new DefaultReflectorFactory();
 
   public XMLConfigBuilder(Reader reader) {
@@ -100,9 +118,19 @@ public class XMLConfigBuilder extends BaseBuilder {
     return configuration;
   }
 
+
+
+  /**
+   * 从根节点configuration开始解析下层节点
+   * @param root 根节点configuration节点
+   */
   private void parseConfiguration(XNode root) {
     try {
       //issue #117 read properties first
+
+      // 解析信息放入Configuration, 在父类的属性里面
+
+      // 首先解析properties，以保证在解析其他节点时便可以立马生效
       propertiesElement(root.evalNode("properties"));
       Properties settings = settingsAsProperties(root.evalNode("settings"));
       loadCustomVfs(settings);
