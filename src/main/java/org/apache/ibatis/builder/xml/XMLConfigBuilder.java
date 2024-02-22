@@ -46,6 +46,7 @@ import org.apache.ibatis.session.LocalCacheScope;
 import org.apache.ibatis.transaction.TransactionFactory;
 import org.apache.ibatis.type.JdbcType;
 import org.apache.ibatis.type.TypeHandler;
+import org.apache.ibatis.util.LogUtil;
 
 /**
  * @author Clinton Begin
@@ -115,6 +116,7 @@ public class XMLConfigBuilder extends BaseBuilder {
     }
     parsed = true;
     parseConfiguration(parser.evalNode("/configuration"));
+    LogUtil.log(this.getClass(), "读取配置文件结束,准备输出配置信息");
     return configuration;
   }
 
@@ -125,6 +127,7 @@ public class XMLConfigBuilder extends BaseBuilder {
    * @param root 根节点configuration节点
    */
   private void parseConfiguration(XNode root) {
+    LogUtil.log(this.getClass(), "读取配置文件");
     try {
       //issue #117 read properties first
 
@@ -144,7 +147,7 @@ public class XMLConfigBuilder extends BaseBuilder {
       environmentsElement(root.evalNode("environments"));
       databaseIdProviderElement(root.evalNode("databaseIdProvider"));
       typeHandlerElement(root.evalNode("typeHandlers"));
-      mapperElement(root.evalNode("mappers"));
+       mapperElement(root.evalNode("mappers"));
     } catch (Exception e) {
       throw new BuilderException("Error parsing SQL Mapper Configuration. Cause: " + e, e);
     }

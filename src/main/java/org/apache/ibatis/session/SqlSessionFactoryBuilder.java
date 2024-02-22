@@ -24,6 +24,7 @@ import org.apache.ibatis.builder.xml.XMLConfigBuilder;
 import org.apache.ibatis.exceptions.ExceptionFactory;
 import org.apache.ibatis.executor.ErrorContext;
 import org.apache.ibatis.session.defaults.DefaultSqlSessionFactory;
+import org.apache.ibatis.util.LogUtil;
 
 /**
  * Builds {@link SqlSession} instances.
@@ -48,14 +49,20 @@ public class SqlSessionFactoryBuilder {
   //build 方法有重载,可以传入一个inputstream, 或者reader
 
   public SqlSessionFactory build(Reader reader, String environment, Properties properties) {
+    LogUtil.log("进入 SqlSessionFactory build() ");
     try {
 
       //1, reader里面是读取的配置文件信息
       //2, XMLConfigBuilder 去解析配置文件, 输出一个 Configuration 类
-      XMLConfigBuilder parser = new XMLConfigBuilder(reader, environment, properties);
+
+      LogUtil.log("创建 XMLConfigBuilder 对象, 准备解析配置文件");
+      XMLConfigBuilder xmlConfigBuilder = new XMLConfigBuilder(reader, environment, properties);
 
       //根据Configuration ,创建SqlSessionFactory,  直接new出来的
-      return build(parser.parse());
+
+      Configuration configuration = xmlConfigBuilder.parse();
+
+      return build(configuration);
     } catch (Exception e) {
       throw ExceptionFactory.wrapException("Error building SqlSession.", e);
     } finally {
@@ -97,6 +104,7 @@ public class SqlSessionFactoryBuilder {
   }
     
   public SqlSessionFactory build(Configuration config) {
+    LogUtil.log(this.getClass(),"config信息解析完毕,调用 DefaultSqlSessionFactory 构造方法,手动创建 DefaultSqlSessionFactory");
     return new DefaultSqlSessionFactory(config);
   }
 
