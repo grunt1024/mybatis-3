@@ -38,6 +38,7 @@ import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.RowBounds;
 import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.util.LogUtil;
 
 /**
  *
@@ -162,7 +163,10 @@ public class DefaultSqlSession implements SqlSession {
   @Override
   public <E> List<E> selectList(String statement, Object parameter, RowBounds rowBounds) {
     try {
+      LogUtil.log(this.getClass(),"select list ");
       MappedStatement ms = configuration.getMappedStatement(statement);
+
+      LogUtil.log(this.getClass(),"mappedStament 获取完毕， 准备开始执行sql" );
       return executor.query(ms, wrapCollection(parameter), rowBounds, Executor.NO_RESULT_HANDLER);
     } catch (Exception e) {
       throw ExceptionFactory.wrapException("Error querying database.  Cause: " + e, e);

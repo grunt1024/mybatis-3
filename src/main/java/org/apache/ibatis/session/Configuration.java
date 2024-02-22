@@ -122,12 +122,23 @@ public class Configuration {
   protected AutoMappingBehavior autoMappingBehavior = AutoMappingBehavior.PARTIAL;
   protected AutoMappingUnknownColumnBehavior autoMappingUnknownColumnBehavior = AutoMappingUnknownColumnBehavior.NONE;
 
+
+  /**
+   * properties 节点信息
+   */
   protected Properties variables = new Properties();
+
+  /**
+   * 反射工厂
+   */
   protected ReflectorFactory reflectorFactory = new DefaultReflectorFactory();
+
+
   protected ObjectFactory objectFactory = new DefaultObjectFactory();
   protected ObjectWrapperFactory objectWrapperFactory = new DefaultObjectWrapperFactory();
 
   protected boolean lazyLoadingEnabled = false;
+
   protected ProxyFactory proxyFactory = new JavassistProxyFactory(); // #224 Using internal Javassist instead of OGNL
 
   protected String databaseId;

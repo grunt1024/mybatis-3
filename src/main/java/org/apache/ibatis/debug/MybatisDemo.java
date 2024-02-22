@@ -1,20 +1,19 @@
 package org.apache.ibatis.debug;
 
-import org.apache.ibatis.builder.BaseBuilder;
+import org.apache.ibatis.datasource.pooled.PooledDataSource;
 import org.apache.ibatis.debug.entity.User;
 import org.apache.ibatis.debug.mapper.UserMapper;
 import org.apache.ibatis.io.Resources;
+import org.apache.ibatis.mapping.Environment;
+import org.apache.ibatis.mapping.MappedStatement;
+import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.apache.ibatis.session.SqlSessionFactoryBuilder;
+import org.apache.ibatis.transaction.TransactionFactory;
 
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.Reader;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.List;
 
 /**
  * @author : zhanghua
@@ -23,7 +22,7 @@ public class MybatisDemo {
 
     public static void main(String[] args) throws IOException {
 
-        String resourcePath = "org/apache/ibatis/debug/Mybatis-config.xml";
+        String resourcePath = "org/apache/ibatis/debug/xml/Mybatis-config.xml";
         final Reader reader = Resources.getResourceAsReader(resourcePath);
 
         //读取配置信息, 构建sqlSessionFactory实例
@@ -38,15 +37,48 @@ public class MybatisDemo {
         //创建 sqlSession
         SqlSession sqlSession = sqlSessionFactory.openSession();
 
-        //这里从statement里面取出sql,  id 去用来填充sql用的;
-//        Long id = 1L;
-//        List<Object> list = sqlSession.selectList("com.github.mybatisDemo.mapper.UserMapper.selectByPrimaryKey", id);
-
-
-        final UserMapper userMapper = sqlSession.getMapper(UserMapper.class);
-        final User user = userMapper.selectByPrimaryKey(1L);
-        System.out.println(user.getName() + user.getAddress());
+        query1(sqlSession);
 
         sqlSession.close();
     }
+
+    private static void query1(SqlSession sqlSession) {
+        //这里从statement里面取出sql,  id 去用来填充sql用的;
+        Long id = 1L;
+        User user = sqlSession.selectOne("org.apache.ibatis.debug.mapper.UserMapper.selectByPrimaryKey", id);
+
+//        sqlSession.selectList();
+//        sqlSession.selectOne();
+    }
+
+    private static void query2(SqlSession sqlSession) {
+        final UserMapper userMapper = sqlSession.getMapper(UserMapper.class);
+        final User user = userMapper.selectByPrimaryKey(1L);
+    }
+
+    private static void analyseSqlSession(SqlSession sqlSession) {
+        //执行一次sql, 数据源,事务,sql语句分别在哪存储?
+        Configuration configuration = sqlSession.getConfiguration();
+        Environment environment = configuration.getEnvironment();
+
+        final TransactionFactory transactionFactory = environment.getTransactionFactory();
+        PooledDataSource dataSource = (PooledDataSource) environment.getDataSource();
+
+        System.out.println("数据源信息:  " + dataSource.getUrl() + dataSource.getUsername() + dataSource.getPassword());
+
+        for (String mappedStatementName : configuration.getMappedStatementNames()) {
+            System.out.println("===================start========================");
+
+            final MappedStatement mappedStatement = configuration.getMappedStatement(mappedStatementName);
+            System.out.println("id:" + mappedStatement.getId());
+            System.out.println("sql:" + mappedStatement.getBoundSql("").getSql());
+
+            System.out.println("===================end========================");
+        }
+
+
+        //TODO 如果
+
+    }
+
 }

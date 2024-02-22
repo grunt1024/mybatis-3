@@ -50,6 +50,13 @@ public interface SqlSession extends Closeable {
   <T> T selectOne(String statement);
 
   /**
+   * 需要传入sql中参数
+   *
+   * select * from user where user_id = ?   参数 100
+   *
+   * 参数类型没办法确定
+   *
+   *
    * Retrieve a single row mapped from the statement key and parameter.
    * @param <T> the returned object type
    * @param statement Unique identifier matching the statement to use.
@@ -76,6 +83,9 @@ public interface SqlSession extends Closeable {
   <E> List<E> selectList(String statement, Object parameter);
 
   /**
+   *
+   * 查询多条记录,传入分页信息
+   *
    * Retrieve a list of mapped objects from the statement key and parameter,
    * within the specified row bounds.
    * @param <E> the returned list element type
@@ -87,6 +97,8 @@ public interface SqlSession extends Closeable {
   <E> List<E> selectList(String statement, Object parameter, RowBounds rowBounds);
 
   /**
+   * 需要把查询出来的数据封装起来以Map形式提供出来, 需要确定mapKey
+   *
    * The selectMap is a special case in that it is designed to convert a list
    * of results into a Map based on one of the properties in the resulting
    * objects.

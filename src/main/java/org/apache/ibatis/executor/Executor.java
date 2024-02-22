@@ -47,7 +47,7 @@ public interface Executor {
 
 
   /**
-   * 清理缓存
+   * 批量提交
    * @return
    * @throws SQLException
    */
@@ -63,6 +63,15 @@ public interface Executor {
    */
   void rollback(boolean required) throws SQLException;
 
+
+  /**
+   * 计算Cache key
+   * @param ms
+   * @param parameterObject
+   * @param rowBounds
+   * @param boundSql
+   * @return
+   */
   CacheKey createCacheKey(MappedStatement ms, Object parameterObject, RowBounds rowBounds, BoundSql boundSql);
 
   boolean isCached(MappedStatement ms, CacheKey key);

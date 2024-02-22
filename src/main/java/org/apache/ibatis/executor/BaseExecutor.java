@@ -31,10 +31,12 @@ import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.RowBounds;
 import org.apache.ibatis.transaction.Transaction;
 import org.apache.ibatis.type.TypeHandlerRegistry;
+import org.apache.ibatis.util.LogUtil;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -47,10 +49,23 @@ public abstract class BaseExecutor implements Executor {
 
     private static final Log log = LogFactory.getLog(BaseExecutor.class);
 
+    /**
+     * 事务抽象
+     */
     protected Transaction transaction;
+
+
+    /**
+     * TODO 这个是干啥的???
+     */
     protected Executor wrapper;
 
     protected ConcurrentLinkedQueue<DeferredLoad> deferredLoads;
+
+
+    /**
+     * 缓存, 其实就是用了一个HashMap
+     */
     protected PerpetualCache localCache;
     protected PerpetualCache localOutputParameterCache;
     protected Configuration configuration;
@@ -109,6 +124,7 @@ public abstract class BaseExecutor implements Executor {
         if (closed) {
             throw new ExecutorException("Executor was closed.");
         }
+        //除了读取数据,其他操作动作(增,删,改) 都需要清除缓存
         clearLocalCache();
         return doUpdate(ms, parameter);
     }
@@ -127,27 +143,37 @@ public abstract class BaseExecutor implements Executor {
 
     @Override
     public <E> List<E> query(MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler) throws SQLException {
+
+        LogUtil.log(this.getClass(), "query");
         BoundSql boundSql = ms.getBoundSql(parameter);
+
+        LogUtil.log(this.getClass(), "获取 boundSql结束" + boundSql.getSql());
         CacheKey key = createCacheKey(ms, parameter, rowBounds, boundSql);
+
+        LogUtil.log(this.getClass(), "构造缓存key结束");
         return query(ms, parameter, rowBounds, resultHandler, key, boundSql);
     }
 
 
     /**
      * 查询数据库中的数据
-     * @param ms 映射语句
-     * @param parameter 参数对象
-     * @param rowBounds 翻页限制条件
+     *
+     * @param ms            映射语句
+     * @param parameter     参数对象
+     * @param rowBounds     翻页限制条件
      * @param resultHandler 结果处理器
-     * @param key 缓存的键
-     * @param boundSql 查询语句
-     * @param <E> 结果类型
+     * @param key           缓存的键
+     * @param boundSql      查询语句
+     * @param <E>           结果类型
      * @return 结果列表
      * @throws SQLException
      */
     @SuppressWarnings("unchecked")
     @Override
     public <E> List<E> query(MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler, CacheKey key, BoundSql boundSql) throws SQLException {
+
+        LogUtil.log(this.getClass(), "query");
+
         ErrorContext.instance().resource(ms.getResource()).activity("executing a query").object(ms.getId());
         if (closed) {
             throw new ExecutorException("Executor was closed.");
@@ -161,11 +187,14 @@ public abstract class BaseExecutor implements Executor {
             queryStack++;
 
             //尝试从本地缓存中获取结果
+            LogUtil.log(this.getClass(), "尝试从本地缓存中获取结果");
             list = resultHandler == null ? (List<E>) localCache.getObject(key) : null;
             if (list != null) {
+                LogUtil.log(this.getClass(), "从缓存中获取到结果");
                 handleLocallyCachedOutputParameters(ms, key, parameter, boundSql);
             } else {
                 //本地缓存中没有值, 从数据库中查询
+                LogUtil.log(this.getClass(), "本地缓存中没有值, 从数据库中查询");
                 list = queryFromDatabase(ms, parameter, rowBounds, resultHandler, key, boundSql);
             }
         } finally {
@@ -274,11 +303,17 @@ public abstract class BaseExecutor implements Executor {
 
     @Override
     public void clearLocalCache() {
+        LogUtil.log(this.getClass(),"clear local cache begin");
         if (!closed) {
             localCache.clear();
             localOutputParameterCache.clear();
         }
     }
+
+
+
+    //TODO  这两个方法为什么要单独给子类实现呢?
+
 
     protected abstract int doUpdate(MappedStatement ms, Object parameter)
             throws SQLException;
@@ -295,8 +330,8 @@ public abstract class BaseExecutor implements Executor {
      * @param rowBounds
      * @param resultHandler
      * @param boundSql
-     * @return
      * @param <E>
+     * @return
      * @throws SQLException
      */
     protected abstract <E> List<E> doQuery(MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler, BoundSql boundSql)
@@ -317,10 +352,11 @@ public abstract class BaseExecutor implements Executor {
 
     /**
      * Apply a transaction timeout.
+     *
      * @param statement a current statement
      * @throws SQLException if a database access error occurs, this method is called on a closed <code>Statement</code>
-     * @since 3.4.0
      * @see StatementUtil#applyTransactionTimeout(Statement, Integer, Integer)
+     * @since 3.4.0
      */
     protected void applyTransactionTimeout(Statement statement) throws SQLException {
         StatementUtil.applyTransactionTimeout(statement, statement.getQueryTimeout(), transaction.getTimeout());
@@ -346,13 +382,14 @@ public abstract class BaseExecutor implements Executor {
 
     /**
      * 从数据库中查询结果
-     * @param ms 映射语句
-     * @param parameter 参数对象
-     * @param rowBounds 翻页限制条件
+     *
+     * @param ms            映射语句
+     * @param parameter     参数对象
+     * @param rowBounds     翻页限制条件
      * @param resultHandler 结果处理器
-     * @param key 缓存的键
-     * @param boundSql 查询语句
-     * @param <E> 结果类型
+     * @param key           缓存的键
+     * @param boundSql      查询语句
+     * @param <E>           结果类型
      * @return 结果列表
      * @throws SQLException
      */

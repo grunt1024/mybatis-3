@@ -305,8 +305,10 @@ public class XMLConfigBuilder extends BaseBuilder {
         environment = context.getStringAttribute("default");
       }
       for (XNode child : context.getChildren()) {
+        //读取id信息
         String id = child.getStringAttribute("id");
         if (isSpecifiedEnvironment(id)) {
+          //TODO ?????
           TransactionFactory txFactory = transactionManagerElement(child.evalNode("transactionManager"));
           DataSourceFactory dsFactory = dataSourceElement(child.evalNode("dataSource"));
           DataSource dataSource = dsFactory.getDataSource();

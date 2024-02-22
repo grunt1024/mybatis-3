@@ -30,6 +30,7 @@ import org.apache.ibatis.mapping.BoundSql;
 import org.apache.ibatis.mapping.MappedStatement;
 import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.RowBounds;
+import org.apache.ibatis.util.LogUtil;
 
 /**
  * @author Clinton Begin
@@ -69,6 +70,7 @@ public class SimpleStatementHandler extends BaseStatementHandler {
 
   @Override
   public <E> List<E> query(Statement statement, ResultHandler resultHandler) throws SQLException {
+    LogUtil.log(this.getClass(),"query");
     String sql = boundSql.getSql();
     statement.execute(sql);
     return resultSetHandler.<E>handleResultSets(statement);

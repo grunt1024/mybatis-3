@@ -35,6 +35,10 @@ import org.apache.ibatis.session.Configuration;
  */
 public class BoundSql {
 
+
+  /**
+   * 可能含有?的占位符sql语句
+   */
   private final String sql;
   private final List<ParameterMapping> parameterMappings;
   private final Object parameterObject;
